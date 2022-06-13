@@ -43,6 +43,8 @@ class ZfsAutobackup:
                             help='Target ZFS filesystem (optional: if not specified, zfs-autobackup will only operate '
                                  'as snapshot-tool on source)')
 
+        parser.add_argument('--snapshot-property', metavar='PROPERTY=VALUE', default=None,
+                            help='Property to set during snapshot (argument to zfs snapshot)')
         parser.add_argument('--pre-snapshot-cmd', metavar="COMMAND", default=[], action='append',
                             help='Run COMMAND before snapshotting (can be used multiple times.')
         parser.add_argument('--post-snapshot-cmd', metavar="COMMAND", default=[], action='append',
@@ -533,7 +535,8 @@ class ZfsAutobackup:
                 source_node.consistent_snapshot(source_datasets, snapshot_name,
                                                 min_changed_bytes=self.args.min_change,
                                                 pre_snapshot_cmds=self.args.pre_snapshot_cmd,
-                                                post_snapshot_cmds=self.args.post_snapshot_cmd)
+                                                post_snapshot_cmds=self.args.post_snapshot_cmd,
+                                                snapshot_property=self.args.snapshot_property)
 
             ################# sync
             # if target is specified, we sync the datasets, otherwise we just thin the source. (e.g. snapshot mode)
