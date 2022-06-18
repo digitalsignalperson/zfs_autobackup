@@ -43,7 +43,7 @@ class ZfsAutobackup:
                             help='Target ZFS filesystem (optional: if not specified, zfs-autobackup will only operate '
                                  'as snapshot-tool on source)')
 
-        group.add_argument('--set-snapshot-properties', metavar='PROPERTY=VALUE,...', type=str,
+        parser.add_argument('--set-snapshot-properties', metavar='PROPERTY=VALUE,...', type=str,
                             help='List of properties to set on the snapshot.')
         parser.add_argument('--pre-snapshot-cmd', metavar="COMMAND", default=[], action='append',
                             help='Run COMMAND before snapshotting (can be used multiple times.')
