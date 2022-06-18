@@ -43,8 +43,8 @@ class ZfsAutobackup:
                             help='Target ZFS filesystem (optional: if not specified, zfs-autobackup will only operate '
                                  'as snapshot-tool on source)')
 
-        parser.add_argument('--snapshot-property', metavar='PROPERTY=VALUE', default=None,
-                            help='Property to set during snapshot (argument to zfs snapshot)')
+        group.add_argument('--set-snapshot-properties', metavar='PROPERTY=VALUE,...', type=str,
+                            help='List of properties to set on the snapshot.')
         parser.add_argument('--pre-snapshot-cmd', metavar="COMMAND", default=[], action='append',
                             help='Run COMMAND before snapshotting (can be used multiple times.')
         parser.add_argument('--post-snapshot-cmd', metavar="COMMAND", default=[], action='append',
@@ -466,6 +466,15 @@ class ZfsAutobackup:
 
         return set_properties
 
+    def set_snapshot_properties_list(self):
+
+        if self.args.set_snapshot_properties:
+            set_snapshot_properties = self.args.set_snapshot_properties.split(",")
+        else:
+            set_snapshot_properties = []
+
+        return set_snapshot_properties
+
     def run(self):
 
         try:
@@ -536,7 +545,7 @@ class ZfsAutobackup:
                                                 min_changed_bytes=self.args.min_change,
                                                 pre_snapshot_cmds=self.args.pre_snapshot_cmd,
                                                 post_snapshot_cmds=self.args.post_snapshot_cmd,
-                                                snapshot_property=self.args.snapshot_property)
+                                                set_snapshot_properties=self.set_snapshot_properties_list())
 
             ################# sync
             # if target is specified, we sync the datasets, otherwise we just thin the source. (e.g. snapshot mode)
