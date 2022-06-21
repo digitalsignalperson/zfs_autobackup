@@ -145,6 +145,8 @@ class ZfsAutobackup:
                             help='Select property naming format. Default: %(default)s')
         parser.add_argument('--hold-format', metavar='FORMAT', default="zfs_autobackup:{}",
                             help='Hold naming format. Default: %(default)s')
+        parser.add_argument('--snapshot-suffix-char', metavar='FORMAT', default=None,
+                            help='Optional character to rpartition the --snapshot-format by. Only the first half will be used for determining "our snapshots"')
 
         parser.add_argument('--version', action='store_true',
                             help='Show version.')
@@ -531,7 +533,7 @@ class ZfsAutobackup:
                 source_thinner = Thinner(self.args.keep_source)
             source_node = ZfsNode(snapshot_time_format=snapshot_time_format, hold_name=hold_name, logger=self, ssh_config=self.args.ssh_config,
                                   ssh_to=self.args.ssh_source, readonly=self.args.test,
-                                  debug_output=self.args.debug_output, description=description, thinner=source_thinner)
+                                  debug_output=self.args.debug_output, description=description, thinner=source_thinner, snapshot_suffix_char=self.args.snapshot_suffix_char)
 
 
             ################# select source datasets
@@ -587,7 +589,8 @@ class ZfsAutobackup:
                                       ssh_to=self.args.ssh_target,
                                       readonly=self.args.test, debug_output=self.args.debug_output,
                                       description="[Target]",
-                                      thinner=target_thinner)
+                                      thinner=target_thinner,
+                                      snapshot_suffix_char=self.args.snapshot_suffix_char)
                 target_node.verbose("Receive datasets under: {}".format(self.args.target_path))
 
                 self.set_title("Synchronising")

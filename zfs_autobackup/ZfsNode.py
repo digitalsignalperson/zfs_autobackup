@@ -19,7 +19,7 @@ class ZfsNode(ExecuteNode):
 
     def __init__(self, snapshot_time_format, hold_name, logger, ssh_config=None, ssh_to=None, readonly=False,
                  description="",
-                 debug_output=False, thinner=None):
+                 debug_output=False, thinner=None, snapshot_suffix_char=None):
 
         self.snapshot_time_format = snapshot_time_format
         self.hold_name = hold_name
@@ -45,6 +45,7 @@ class ZfsNode(ExecuteNode):
                 self.verbose("Keep no old snaphots")
 
         self.__thinner = thinner
+        self.snapshot_suffix_char = snapshot_suffix_char
 
         # list of ZfsPools
         self.__pools = {}

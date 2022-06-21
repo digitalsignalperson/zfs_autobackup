@@ -366,8 +366,16 @@ class ZfsDataset:
         """get timestamp from snapshot name. Only works for our own snapshots
         with the correct format.
         """
+        name = self.snapshot_name
+        time_format = self.zfs_node.snapshot_time_format
+        suffix = self.zfs_node.snapshot_suffix_char
 
-        time_secs = time.mktime(time.strptime(self.snapshot_name, self.zfs_node.snapshot_time_format))
+        if suffix:
+            if suffix in name:
+                name = name.rpartition(suffix)[0]
+            time_format = time_format.rpartition(suffix)[0]
+        
+        time_secs = time.mktime(time.strptime(name, time_format))
         return time_secs
 
     def from_names(self, names):
