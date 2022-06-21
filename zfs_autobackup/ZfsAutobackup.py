@@ -455,8 +455,8 @@ class ZfsAutobackup:
             self.clear_progress()
 
         target_path_dataset = ZfsDataset(target_node, self.args.target_path)
-        if not self.args.no_thinning:
-            self.thin_missing_targets(target_dataset=target_path_dataset, used_target_datasets=target_datasets)
+        # if not self.args.no_thinning:
+            # self.thin_missing_targets(target_dataset=target_path_dataset, used_target_datasets=target_datasets)
 
         if self.args.destroy_missing is not None:
             self.destroy_missing_targets(target_dataset=target_path_dataset, used_target_datasets=target_datasets)
