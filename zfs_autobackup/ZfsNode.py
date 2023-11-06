@@ -260,3 +260,31 @@ class ZfsNode(ExecuteNode):
                 selected_filesystems.append(dataset)
 
         return selected_filesystems
+    
+    def selected_datasets_from_paths(self, source_paths, exclude_paths, exclude_unchanged, min_change):
+        """determine filesystems from the source_paths list that should be backed up
+           a path ending with /* will try to select child datasets recursively
+
+           returns: list of ZfsDataset
+        """
+
+        self.debug("Getting selected datasets")
+
+        names = []
+        for source_path in source_paths:
+            cmd = ["zfs", "list", "-t", "volume,filesystem", "-o", "name", "-H"]
+            if source_path.endswith('/*'):
+                source_path = source_path[:-2]
+                cmd.append("-r")
+            cmd.append(source_path)
+            names += self.run(readonly=True, cmd=cmd)
+
+        # The returnlist of selected ZfsDataset's:
+        selected_filesystems = []
+        for name in names:
+            dataset = ZfsDataset(self, name)
+
+            if dataset.is_selected_path(exclude_paths=exclude_paths, exclude_unchanged=exclude_unchanged, min_change=min_change):
+                selected_filesystems.append(dataset)
+
+        return selected_filesystems

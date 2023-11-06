@@ -38,10 +38,15 @@ class ZfsAutobackup:
 
         parser.add_argument('backup_name', metavar='BACKUP-NAME', default=None, nargs='?',
                             help='Name of the backup (you should set the zfs property "autobackup:backup-name" to '
-                                 'true on filesystems you want to backup')
+                                 'true on filesystems you want to backup (unless using SOURCE-PATHS)')
         parser.add_argument('target_path', metavar='TARGET-PATH', default=None, nargs='?',
                             help='Target ZFS filesystem (optional: if not specified, zfs-autobackup will only operate '
                                  'as snapshot-tool on source)')
+        parser.add_argument('source_paths', metavar='SOURCE-PATHS', default=None, nargs='*',
+                            help='Source ZFS filesystem(s) (optional: if not specified, zfs-autobackup selects datasets '
+                                 'based on BACKUP-NAME). Ignores selecting autobackup:backup-name if specified. '
+                                 'If filesystem ends with a "/*" then the selection will be recursive. '
+                                 'Use escaping for your shell as required (e.g. rpool/data/\*)')
 
         parser.add_argument('--set-snapshot-properties', metavar='PROPERTY=VALUE,...', type=str,
                             help='List of properties to set on the snapshot.')
@@ -516,7 +521,7 @@ class ZfsAutobackup:
             hold_name = self.args.hold_format.format(self.args.backup_name)
 
             self.verbose("")
-            self.verbose("Selecting dataset property : {}".format(property_name))
+            self.verbose("Backup name                : {}".format(property_name))
             self.verbose("Snapshot format            : {}".format(snapshot_time_format))
 
             if not self.args.no_holds:
@@ -554,10 +559,16 @@ class ZfsAutobackup:
                     self.warning("Source and target are on the same host, excluding received datasets from selection.")
                     exclude_received = True
 
-            source_datasets = source_node.selected_datasets(property_name=property_name,exclude_received=exclude_received,
-                                                                     exclude_paths=exclude_paths,
-                                                                     exclude_unchanged=self.args.exclude_unchanged,
-                                                                     min_change=self.args.min_change)
+            if self.args.source_paths:
+                source_datasets = source_node.selected_datasets_from_paths(source_paths=self.args.source_paths,
+                                                                            exclude_paths=exclude_paths,
+                                                                            exclude_unchanged=self.args.exclude_unchanged,
+                                                                            min_change=self.args.min_change)
+            else:
+                source_datasets = source_node.selected_datasets(property_name=property_name,exclude_received=exclude_received,
+                                                                        exclude_paths=exclude_paths,
+                                                                        exclude_unchanged=self.args.exclude_unchanged,
+                                                                        min_change=self.args.min_change)
             if not source_datasets:
                 self.error(
                     "No source filesystems selected, please do a 'zfs set autobackup:{0}=true' on the source datasets "
@@ -637,6 +648,7 @@ class ZfsAutobackup:
 
         except Exception as e:
             self.error("Exception: " + str(e))
+            self.error(sys.exc_info())
             if self.args.debug:
                 raise
             return 255

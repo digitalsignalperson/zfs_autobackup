@@ -180,6 +180,30 @@ class ZfsDataset:
         self.verbose("Selected")
         return True
 
+    def is_selected_path(self, exclude_paths, exclude_unchanged, min_change):
+        """determine if dataset should be selected for backup (called from
+        ZfsNode)
+
+        Args:
+            :type exclude_paths: list of str
+            :type exclude_unchanged: bool
+            :type min_change: bool
+        """
+
+        # our path starts with one of the excluded paths?
+        for exclude_path in exclude_paths:
+            # if self.name.startswith(exclude_path):
+            if (self.name + "/").startswith(exclude_path + "/"):
+                # too noisy for verbose
+                self.debug("Excluded (path in exclude list)")
+                return False
+
+        if exclude_unchanged and not self.is_changed(min_change):
+            self.verbose("Excluded (unchanged since last snapshot)")
+            return False
+
+        self.verbose("Selected")
+        return True
 
     @CachedProperty
     def parent(self):
