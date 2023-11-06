@@ -41,7 +41,7 @@ class ZfsAutobackup:
                                  'true on filesystems you want to backup (unless using SOURCE-PATHS)')
         parser.add_argument('target_path', metavar='TARGET-PATH', default=None, nargs='?',
                             help='Target ZFS filesystem (optional: if not specified, zfs-autobackup will only operate '
-                                 'as snapshot-tool on source)')
+                                 'as snapshot-tool on source). Specify /None to use as a snapshot-tool with SOURCE-PATHS')
         parser.add_argument('source_paths', metavar='SOURCE-PATHS', default=None, nargs='*',
                             help='Source ZFS filesystem(s) (optional: if not specified, zfs-autobackup selects datasets '
                                  'based on BACKUP-NAME). Ignores selecting autobackup:backup-name if specified. '
@@ -196,9 +196,12 @@ class ZfsAutobackup:
             self.warning(
                 "The --raw option isn't needed anymore (its autodetected now). Also see --encrypt and --decrypt.")
 
-        if args.target_path is not None and args.target_path[0] == "/":
-            self.log.error("Target should not start with a /")
-            sys.exit(255)
+        if args.target_path is not None:
+            if args.target_path == "/None":
+                args.target_path = None
+            elif args.target_path[0] == "/":
+                self.log.error("Target should not start with a /")
+                sys.exit(255)
 
         if args.compress and args.ssh_source is None and args.ssh_target is None:
             self.warning("Using compression, but transfer is local.")
