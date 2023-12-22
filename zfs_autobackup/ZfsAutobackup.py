@@ -651,7 +651,9 @@ class ZfsAutobackup:
 
         except Exception as e:
             self.error("Exception: " + str(e))
-            self.error(sys.exc_info())
+            t, v, tb = sys.exc_info()
+            estr = f'type={t}\nvalue={v}\nTraceback={tb}'
+            self.error(estr)
             if self.args.debug:
                 raise
             return 255
